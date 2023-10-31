@@ -10,6 +10,7 @@ import ru.practicum.shareit.item.storage.ItemStorage;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserStorage;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,14 +33,12 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto updateItem(long ownerId, long itemId, ItemDto itemDto) {
-        Item item = getItem(itemId);
+        Item oldItem = getItem(itemId);
         getUser(ownerId);
         itemDto.setId(itemId);
-        completeItemFields(itemDto, getItemDto(itemId));
 
-        if (item.getOwnerId() == ownerId) {
-            item = itemMapper.makeItem(ownerId, itemDto);
-            return itemMapper.makeItemDto(itemStorage.updateItem(item));
+        if (oldItem.getOwnerId() == ownerId) {
+            return itemMapper.makeItemDto(itemStorage.updateItem(updateItemFields(itemDto, oldItem)));
         } else {
             throw new EntityNotFoundException("Пользователь не может вносить изменения в предметы," +
                     " которые были добавлены другим пользователем");
@@ -67,27 +66,34 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> searchItems(String text) {
+
+        if (text.isBlank()) {
+            return Collections.emptyList();
+        }
+
         return itemStorage.searchItem(text).stream()
                 .map(itemMapper::makeItemDto)
                 .collect(Collectors.toList());
     }
 
+    private Item updateItemFields(ItemDto itemDto, Item oldItem) {
+        String name = itemDto.getName();
+        String description = itemDto.getDescription();
+        if (name != null && !name.isBlank()) {
+            oldItem.setName(name);
+        }
+        if (description != null && !description.isBlank()) {
+            oldItem.setDescription(description);
+        }
+        if (itemDto.getAvailable() != null) {
+            oldItem.setAvailable(itemDto.getAvailable());
+        }
+        return oldItem;
+    }
+
     private User getUser(long userId) {
         return userStorage.getUser(userId)
                 .orElseThrow(() -> new EntityNotFoundException(WRONG_USER_ID));
-    }
-
-    private ItemDto completeItemFields(ItemDto itemDto, ItemDto itemDtoById) {
-        if (itemDto.getName() == null) {
-            itemDto.setName(itemDtoById.getName());
-        }
-        if (itemDto.getDescription() == null) {
-            itemDto.setDescription(itemDtoById.getDescription());
-        }
-        if (itemDto.getAvailable() == null) {
-            itemDto.setAvailable(itemDtoById.getAvailable());
-        }
-        return itemDto;
     }
 
     private Item getItem(long itemId) {

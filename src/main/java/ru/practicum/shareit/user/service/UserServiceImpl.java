@@ -31,18 +31,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto updateUser(long userId, UserDto userDto) {
+        User oldUser = getUser(userId);
         userDto.setId(userId);
         checkUsersEmail(userDto);
-        completeFieldsForUpdate(userDto, getUser(userId));
-        User user = userStorage.updateUser(userId, userMapper.makeUser(userDto));
-        return userMapper.makeUserDto(user);
+
+        return userMapper.makeUserDto(userStorage.updateUser(userId, updateUserFields(userDto, oldUser)));
     }
 
     @Override
-    public UserDto getUser(long id) {
-        User user = userStorage.getUser(id)
-                .orElseThrow(() -> new EntityNotFoundException(WRONG_USER_ID));
-        return userMapper.makeUserDto(user);
+    public UserDto getUserDto(long id) {
+        return userMapper.makeUserDto(getUser(id));
     }
 
     @Override
@@ -72,13 +70,20 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private UserDto completeFieldsForUpdate(UserDto userDto, UserDto currentUserDto) {
-        if (userDto.getName() == null) {
-            userDto.setName(currentUserDto.getName());
+    private User updateUserFields(UserDto userDto, User oldUser) {
+        String name = userDto.getName();
+        String email = userDto.getEmail();
+        if (name != null && !name.isBlank()) {
+            oldUser.setName(name);
         }
-        if (userDto.getEmail() == null) {
-            userDto.setEmail(currentUserDto.getEmail());
+        if (email != null && !email.isBlank()) {
+            oldUser.setEmail(email);
         }
-        return userDto;
+        return oldUser;
+    }
+
+    private User getUser(long userId) {
+        return userStorage.getUser(userId)
+                .orElseThrow(() -> new EntityNotFoundException(WRONG_USER_ID));
     }
 }

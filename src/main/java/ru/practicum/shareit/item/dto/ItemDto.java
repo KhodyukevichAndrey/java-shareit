@@ -11,11 +11,19 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 public class ItemDto {
     private long id;
-    @NotBlank
+    @NotBlank(groups = {Create.class})
+    @Size(max = 50, groups = {Update.class})
     private String name;
-    @NotBlank
-    @Size(max = 200)
+    @NotBlank(groups = {Create.class})
+    @Size(max = 200, groups = {Update.class})
     private String description;
-    @NotNull
+    @NotNull(groups = {Create.class})
     private Boolean available;
+
+
+    public interface Create {
+    }
+
+    public interface Update {
+    }
 }

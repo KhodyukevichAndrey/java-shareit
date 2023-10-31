@@ -9,6 +9,7 @@ public class UserMapper {
 
     public User makeUser(UserDto userDto) {
         return new User(
+                userDto.getId(),
                 userDto.getName(),
                 userDto.getEmail()
         );

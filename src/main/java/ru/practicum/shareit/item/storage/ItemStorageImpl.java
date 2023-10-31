@@ -19,13 +19,7 @@ public class ItemStorageImpl implements ItemStorage {
     public Item addItem(Item item) {
         item.setItemId(itemId++);
 
-        userItems.compute(item.getOwnerId(), (ownerId, itemsIds) -> {
-            if (itemsIds == null) {
-                itemsIds = new ArrayList<>();
-            }
-            itemsIds.add(item.getItemId());
-            return itemsIds;
-        });
+        userItems.computeIfAbsent(item.getOwnerId(), k -> new ArrayList<>()).add(item.getItemId());
         items.put(item.getItemId(), item);
         log.debug("Item успешно создан");
 
@@ -41,17 +35,13 @@ public class ItemStorageImpl implements ItemStorage {
 
     @Override
     public Optional<Item> getItem(long id) {
-        try {
-            return Optional.of(items.get(id));
-        } catch (NullPointerException e) {
-            return Optional.empty();
-        }
+        return Optional.ofNullable(items.get(id));
     }
 
     @Override
     public List<Item> getAllOwnersItems(long id) {
-        return items.values().stream()
-                .filter(item -> item.getOwnerId() == id)
+        return userItems.get(id).stream()
+                .map(items::get)
                 .collect(Collectors.toList());
     }
 
@@ -65,10 +55,6 @@ public class ItemStorageImpl implements ItemStorage {
     @Override
     public List<Item> searchItem(String text) {
         String textForSearch = text.toLowerCase();
-
-        if (textForSearch.isBlank()) {
-            return Collections.emptyList();
-        }
 
         return items.values().stream()
                 .filter(Item::getAvailable)

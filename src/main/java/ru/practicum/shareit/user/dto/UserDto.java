@@ -11,9 +11,15 @@ import javax.validation.constraints.NotEmpty;
 @AllArgsConstructor
 public class UserDto {
     private long id;
-    @NotBlank
+    @NotBlank(groups = {Create.class})
     private String name;
-    @NotEmpty
-    @Email
+    @NotEmpty(groups = {Create.class})
+    @Email(groups = {Create.class, Update.class})
     private String email;
+
+    public interface Create {
+    }
+
+    public interface Update {
+    }
 }

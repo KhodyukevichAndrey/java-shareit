@@ -3,6 +3,7 @@ package ru.practicum.shareit.errorhandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -29,10 +30,18 @@ public class ErrorHandler {
         return new ErrorResponse(exception.getMessage());
     }
 
-    @ExceptionHandler
-    public ResponseEntity<String> handleValidateAnnotationException(ConstraintViolationException exception) {
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<String> handleValidAnnotationException(ConstraintViolationException exception) {
         log.debug("Получен статус 400 Bad Request {}", exception.getMessage(), exception);
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleUndefinedException(final Throwable exception) {
+        log.debug("Получен статус 500 Internal Server Error {}", exception.getMessage(), exception);
+        return new ErrorResponse(exception.getMessage());
     }
 
     static class ErrorResponse {

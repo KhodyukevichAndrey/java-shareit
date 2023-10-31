@@ -21,17 +21,13 @@ public class UserStorageImpl implements UserStorage {
     @Override
     public User updateUser(long userId, User user) {
         user.setId(userId);
-        users.put(userId, user);
+        users.put(user.getId(), user);
         return user;
     }
 
     @Override
     public Optional<User> getUser(long id) {
-        try {
-            return Optional.of(users.get(id));
-        } catch (NullPointerException e) {
-            return Optional.empty();
-        }
+        return Optional.ofNullable(users.get(id));
     }
 
     @Override
