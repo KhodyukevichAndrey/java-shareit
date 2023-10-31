@@ -12,10 +12,10 @@ import javax.validation.constraints.Size;
 public class ItemDto {
     private long id;
     @NotBlank(groups = {Create.class})
-    @Size(max = 50, groups = {Update.class})
+    @Size(max = 50, groups = {Create.class, Update.class})
     private String name;
     @NotBlank(groups = {Create.class})
-    @Size(max = 200, groups = {Update.class})
+    @Size(max = 200, groups = {Create.class, Update.class})
     private String description;
     @NotNull(groups = {Create.class})
     private Boolean available;
