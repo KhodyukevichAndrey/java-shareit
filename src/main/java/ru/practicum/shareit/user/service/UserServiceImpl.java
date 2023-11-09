@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
         userDto.setId(userId);
         checkUsersEmail(userDto);
 
-        return userMapper.makeUserDto(userStorage.updateUser(userId, updateUserFields(userDto, oldUser)));
+        return userMapper.makeUserDto(updateUserFields(userDto, oldUser));
     }
 
     @Override

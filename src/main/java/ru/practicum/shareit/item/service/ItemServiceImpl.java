@@ -38,7 +38,7 @@ public class ItemServiceImpl implements ItemService {
         itemDto.setId(itemId);
 
         if (oldItem.getOwnerId() == ownerId) {
-            return itemMapper.makeItemDto(itemStorage.updateItem(updateItemFields(itemDto, oldItem)));
+            return itemMapper.makeItemDto(updateItemFields(itemDto, oldItem));
         } else {
             throw new EntityNotFoundException("Пользователь не может вносить изменения в предметы," +
                     " которые были добавлены другим пользователем");

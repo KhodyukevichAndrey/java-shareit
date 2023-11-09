@@ -27,7 +27,7 @@ public class ItemStorageImpl implements ItemStorage {
     }
 
     @Override
-    public Item updateItem(Item item) {
+    public Item updateItem(Item item) { // не требуется
         items.put(item.getItemId(), item);
         log.debug("Item с ID - {} успешно обновлен", item.getItemId());
         return item;
@@ -40,14 +40,14 @@ public class ItemStorageImpl implements ItemStorage {
 
     @Override
     public List<Item> getAllOwnersItems(long id) {
-        return userItems.get(id).stream()
+        return userItems.getOrDefault(id, Collections.emptyList()).stream()
                 .map(items::get)
                 .collect(Collectors.toList());
     }
 
     @Override
     public void deleteItem(long ownerId, long id) {
-        userItems.get(ownerId).remove(id);
+        userItems.getOrDefault(ownerId, Collections.emptyList()).remove(id);
         items.remove(id);
         log.debug("Item с ID - {} успешно удален", id);
     }
