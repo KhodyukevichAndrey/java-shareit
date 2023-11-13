@@ -5,5 +5,5 @@ public class HeadersConstants {
     private HeadersConstants() {
     }
 
-    public static final String OWNER_ID = "X-Sharer-User-Id";
+    public static final String USER_ID = "X-Sharer-User-Id";
 }
