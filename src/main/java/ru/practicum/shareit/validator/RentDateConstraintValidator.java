@@ -12,6 +12,9 @@ public class RentDateConstraintValidator implements ConstraintValidator<RentDate
     public boolean isValid(BookingRequestDto bookingRequestDto, ConstraintValidatorContext cxt) {
         LocalDateTime start = bookingRequestDto.getStart();
         LocalDateTime end = bookingRequestDto.getEnd();
+        if (start == null || end == null) {
+            return false;
+        }
         return !start.isAfter(end) && !start.isEqual(end);
     }
 }

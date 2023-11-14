@@ -1,15 +1,15 @@
 package ru.practicum.shareit.item.comment;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -21,9 +21,11 @@ public class Comment {
     private String text;
     @ManyToOne
     @JoinColumn(name = "item_id")
+    @ToString.Exclude
     private Item item;
     @ManyToOne
     @JoinColumn(name = "author_id")
+    @ToString.Exclude
     private User author;
     private LocalDateTime created;
 }
