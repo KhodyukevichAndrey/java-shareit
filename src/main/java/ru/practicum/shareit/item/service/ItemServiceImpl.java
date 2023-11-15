@@ -171,8 +171,8 @@ public class ItemServiceImpl implements ItemService {
     private BookingShortDto getLastBooking(List<Booking> bookings) {
         if (!bookings.isEmpty()) {
             return bookings.stream()
-                    .filter(booking -> booking.getStart().isBefore(LocalDateTime.now()))
-                    .max(Comparator.comparing(Booking::getEnd))
+                    .filter(booking -> !booking.getStart().isAfter(LocalDateTime.now()))
+                    .findFirst()
                     .map(bookingMapper::makeBookingShortDto)
                     .orElse(null);
         } else {
@@ -184,7 +184,7 @@ public class ItemServiceImpl implements ItemService {
         if (!bookings.isEmpty()) {
             return bookings.stream()
                     .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
-                    .min(Comparator.comparing(Booking::getEnd))
+                    .reduce((first, second) -> second)
                     .map(bookingMapper::makeBookingShortDto)
                     .orElse(null);
         } else {
