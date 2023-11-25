@@ -17,6 +17,7 @@ public class UserDto {
     private String name;
     @NotEmpty(groups = {Create.class})
     @Email(groups = {Create.class, Update.class})
+    @Size(max = 100, groups = {Create.class, Update.class})
     private String email;
 
     public interface Create {

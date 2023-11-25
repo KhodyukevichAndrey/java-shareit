@@ -2,19 +2,19 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.EntityNotFoundException;
-import ru.practicum.shareit.exception.ValidateException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
@@ -23,19 +23,19 @@ public class UserServiceImpl implements UserService {
     private static final String EMAIL_DUPLICATE_ERROR = "Указанный формат почты не поддерживается";
 
     @Override
+    @Transactional
     public UserDto addUser(UserDto userDto) {
-        checkUsersEmail(userDto);
-        User user = userStorage.addUser(userMapper.makeUser(userDto));
+        User user = userStorage.save(userMapper.makeUser(userDto));
         return userMapper.makeUserDto(user);
     }
 
     @Override
+    @Transactional
     public UserDto updateUser(long userId, UserDto userDto) {
         User oldUser = getUser(userId);
         userDto.setId(userId);
-        checkUsersEmail(userDto);
 
-        return userMapper.makeUserDto(updateUserFields(userDto, oldUser));
+        return userMapper.makeUserDto(userStorage.save(updateUserFields(userDto, oldUser)));
     }
 
     @Override
@@ -45,29 +45,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> getAllUsers() {
-        List<User> users = userStorage.getAllUsers();
+        List<User> users = userStorage.findAll();
         return users.stream()
                 .map(userMapper::makeUserDto)
                 .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional
     public void deleteUser(long id) {
-        userStorage.deleteUser(id);
-    }
-
-    private void checkUsersEmail(UserDto userDto) {
-        String userEmail = userDto.getEmail();
-        if (userEmail != null) {
-            Optional<String> validation = userStorage.getAllUsers().stream()
-                    .filter(user -> userDto.getId() != user.getId())
-                    .map(User::getEmail)
-                    .filter(email -> email.equals(userEmail))
-                    .findAny();
-            if (validation.isPresent()) {
-                throw new ValidateException(EMAIL_DUPLICATE_ERROR);
-            }
-        }
+        userStorage.deleteById(id);
     }
 
     private User updateUserFields(UserDto userDto, User oldUser) {
@@ -83,7 +70,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private User getUser(long userId) {
-        return userStorage.getUser(userId)
+        return userStorage.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException(WRONG_USER_ID));
     }
 }
