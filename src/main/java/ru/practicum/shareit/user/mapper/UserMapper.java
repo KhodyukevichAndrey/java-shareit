@@ -8,7 +8,7 @@ import ru.practicum.shareit.user.model.User;
 @Component
 public class UserMapper {
 
-    public User makeUser(UserDto userDto) {
+    public static User makeUser(UserDto userDto) {
         return new User(
                 userDto.getId(),
                 userDto.getName(),
@@ -16,7 +16,7 @@ public class UserMapper {
         );
     }
 
-    public UserDto makeUserDto(User user) {
+    public static UserDto makeUserDto(User user) {
         return new UserDto(
                 user.getId(),
                 user.getName(),
@@ -24,7 +24,7 @@ public class UserMapper {
         );
     }
 
-    public UserShortDto makeUserShortDto(User user) {
+    public static UserShortDto makeUserShortDto(User user) {
         return new UserShortDto(
                 user.getId()
         );

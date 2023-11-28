@@ -1,7 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
@@ -21,6 +21,8 @@ import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.CommentStorage;
 import ru.practicum.shareit.item.storage.ItemStorage;
+import ru.practicum.shareit.request.model.RequestItem;
+import ru.practicum.shareit.request.storage.RequestItemStorage;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserStorage;
 
@@ -29,6 +31,9 @@ import java.util.*;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static ru.practicum.shareit.constants.error.ErrorConstants.*;
+import static ru.practicum.shareit.constants.sort.SortConstants.SORT_BY_CREATED_DESC;
+import static ru.practicum.shareit.constants.sort.SortConstants.SORT_BY_START_DESC;
 
 @Service
 @RequiredArgsConstructor
@@ -36,23 +41,24 @@ import static java.util.stream.Collectors.toList;
 public class ItemServiceImpl implements ItemService {
 
     private final ItemStorage itemStorage;
-    private final ItemMapper itemMapper;
     private final UserStorage userStorage;
     private final BookingStorage bookingStorage;
-    private final BookingMapper bookingMapper;
+    private final RequestItemStorage requestItemStorage;
     private final CommentStorage commentStorage;
-    private final CommentMapper commentMapper;
-    private static final String WRONG_USER_ID = "Пользователь с указанным ID не найден";
-    private static final String WRONG_ITEM_ID = "Предмет с указанным ID не найден";
-    private static final Sort SORT_BY_CREATED_DESC = Sort.by(Sort.Direction.DESC, "created");
-    private static final Sort SORT_BY_START_DESC = Sort.by(Sort.Direction.DESC, "start");
 
     @Override
     @Transactional
     public ItemDto addItem(long ownerId, ItemDto itemDto) {
         User user = getUser(ownerId);
-        Item item = itemMapper.makeItem(itemDto, user);
-        return itemMapper.makeItemDto(itemStorage.save(item));
+        Long requestId = itemDto.getRequestId();
+        RequestItem requestItem = null;
+
+        if (requestId != null) {
+            requestItem = getRequestItem(requestId);
+        }
+
+        Item item = ItemMapper.makeItem(itemDto, user, requestItem);
+        return ItemMapper.makeItemDto(itemStorage.save(item));
     }
 
     @Override
@@ -63,7 +69,7 @@ public class ItemServiceImpl implements ItemService {
         itemDto.setId(itemId);
 
         if (oldItem.getOwner().getId() == ownerId) {
-            return itemMapper.makeItemDto(itemStorage.save(updateItemFields(itemDto, oldItem, user)));
+            return ItemMapper.makeItemDto(itemStorage.save(updateItemFields(itemDto, oldItem, user)));
         } else {
             throw new EntityNotFoundException("Пользователь не может вносить изменения в предметы," +
                     " которые были добавлены другим пользователем");
@@ -71,11 +77,13 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto getItemDto(long userId, long itemId) {
+    public ItemResponseDto getItemDto(long userId, long itemId) {
+        getUser(userId);
         Item item = getItem(itemId);
+        ItemDto itemDto = ItemMapper.makeItemDto(item);
         List<CommentResponseDto> commentsDto = commentStorage.findCommentsByItemId(itemId, SORT_BY_CREATED_DESC)
                 .stream()
-                .map(commentMapper::makeCommentResponseDto)
+                .map(CommentMapper::makeCommentResponseDto)
                 .collect(toList());
 
         if (item.getOwner().getId() == userId) {
@@ -86,16 +94,16 @@ public class ItemServiceImpl implements ItemService {
             BookingShortDto lastBooking = getLastBooking(allOwnerBookings);
             BookingShortDto nextBooking = getNextBooking(allOwnerBookings);
 
-            return itemMapper.makeItemForOwnerDto(item, lastBooking, nextBooking, commentsDto);
+            return ItemMapper.makeItemForOwnerDto(itemDto, lastBooking, nextBooking, commentsDto);
         } else {
-            return itemMapper.makeItemForOwnerDto(item, null, null, commentsDto);
+            return ItemMapper.makeItemForOwnerDto(itemDto, null, null, commentsDto);
         }
     }
 
     @Override
-    public List<ItemResponseDto> getAllOwnersItems(long ownerId) {
+    public List<ItemResponseDto> getAllOwnersItems(long ownerId, int from, int size) {
         getUser(ownerId);
-        List<Item> items = itemStorage.findByOwnerIdOrderById(ownerId);
+        List<Item> items = itemStorage.findByOwnerIdOrderById(ownerId, PageRequest.of(from / size, size));
 
         return makeListItemDto(items);
     }
@@ -114,13 +122,13 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItems(String text) {
+    public List<ItemDto> searchItems(String text, int from, int size) {
         if (text.isBlank()) {
             return Collections.emptyList();
         }
 
-        return itemStorage.searchItem(text).stream()
-                .map(itemMapper::makeItemDto)
+        return itemStorage.searchItem(text, PageRequest.of(from / size, size)).stream()
+                .map(ItemMapper::makeItemDto)
                 .collect(toList());
     }
 
@@ -134,8 +142,8 @@ public class ItemServiceImpl implements ItemService {
                 LocalDateTime.now(), userId);
 
         if (isBookingExists) {
-            Comment comment = commentMapper.makeComment(commentRequestDto, item, author);
-            return commentMapper.makeCommentResponseDto(commentStorage.save(comment));
+            Comment comment = CommentMapper.makeComment(commentRequestDto, item, author);
+            return CommentMapper.makeCommentResponseDto(commentStorage.save(comment));
         } else {
             throw new NotAvailableException("Комментарии к предметам могут оставлять пользователи," +
                     " которые брали предмет в аренду");
@@ -168,12 +176,17 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new EntityNotFoundException(WRONG_ITEM_ID));
     }
 
+    private RequestItem getRequestItem(long requestId) {
+        return requestItemStorage.findById(requestId)
+                .orElseThrow(() -> new EntityNotFoundException(WRONG_REQUEST_ID));
+    }
+
     private BookingShortDto getLastBooking(List<Booking> bookings) {
         if (!bookings.isEmpty()) {
             return bookings.stream()
                     .filter(booking -> !booking.getStart().isAfter(LocalDateTime.now()))
                     .findFirst()
-                    .map(bookingMapper::makeBookingShortDto)
+                    .map(BookingMapper::makeBookingShortDto)
                     .orElse(null);
         } else {
             return null;
@@ -185,7 +198,7 @@ public class ItemServiceImpl implements ItemService {
             return bookings.stream()
                     .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
                     .reduce((first, second) -> second)
-                    .map(bookingMapper::makeBookingShortDto)
+                    .map(BookingMapper::makeBookingShortDto)
                     .orElse(null);
         } else {
             return null;
@@ -206,12 +219,12 @@ public class ItemServiceImpl implements ItemService {
         List<ItemResponseDto> itemForOwnerDtoList = new LinkedList<>();
 
         for (Item item : items) {
-            itemForOwnerDtoList.add(itemMapper.makeItemForOwnerDto(
-                    item,
+            itemForOwnerDtoList.add(ItemMapper.makeItemForOwnerDto(
+                    ItemMapper.makeItemDto(item),
                     getLastBooking(bookingsByItem.getOrDefault(item, Collections.emptyList())),
                     getNextBooking(bookingsByItem.getOrDefault(item, Collections.emptyList())),
                     commentsByItem.getOrDefault(item, Collections.emptyList()).stream()
-                            .map(commentMapper::makeCommentResponseDto)
+                            .map(CommentMapper::makeCommentResponseDto)
                             .collect(toList())
             ));
         }

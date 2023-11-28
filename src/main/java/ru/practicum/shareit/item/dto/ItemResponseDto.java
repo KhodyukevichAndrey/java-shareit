@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
-import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
 
@@ -16,9 +15,10 @@ public class ItemResponseDto extends ItemDto {
     private BookingShortDto nextBooking;
     private List<CommentResponseDto> comments;
 
-    public ItemResponseDto(Item item, BookingShortDto lastBooking, BookingShortDto nextBooking,
+    public ItemResponseDto(ItemDto itemDto, BookingShortDto lastBooking, BookingShortDto nextBooking,
                            List<CommentResponseDto> comments) {
-        super(item.getId(), item.getName(), item.getDescription(), item.isAvailable());
+        super(itemDto.getId(), itemDto.getName(), itemDto.getDescription(), itemDto.getAvailable(),
+                itemDto.getRequestId());
         this.lastBooking = lastBooking;
         this.nextBooking = nextBooking;
         this.comments = comments;

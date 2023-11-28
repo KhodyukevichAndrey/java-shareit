@@ -16,10 +16,7 @@ import ru.practicum.shareit.user.model.User;
 @RequiredArgsConstructor
 public class BookingMapper {
 
-    private final UserMapper userMapper;
-    private final ItemMapper itemMapper;
-
-    public Booking makeBooking(BookingRequestDto bookingRequestDto, Item item, User booker) {
+    public static Booking makeBooking(BookingRequestDto bookingRequestDto, Item item, User booker) {
         return new Booking(
                 bookingRequestDto.getId(),
                 bookingRequestDto.getStart(),
@@ -30,18 +27,18 @@ public class BookingMapper {
         );
     }
 
-    public BookingResponseDto makeBookingResponse(Booking booking) {
+    public static BookingResponseDto makeBookingResponse(Booking booking) {
         return new BookingResponseDto(
                 booking.getId(),
                 booking.getStart(),
                 booking.getEnd(),
                 booking.getStatus(),
-                userMapper.makeUserShortDto(booking.getBooker()),
-                itemMapper.makeItemShortDto(booking.getItem())
+                UserMapper.makeUserShortDto(booking.getBooker()),
+                ItemMapper.makeItemShortDto(booking.getItem())
         );
     }
 
-    public BookingShortDto makeBookingShortDto(Booking booking) {
+    public static BookingShortDto makeBookingShortDto(Booking booking) {
         return new BookingShortDto(
                 booking.getId(),
                 booking.getBooker().getId()

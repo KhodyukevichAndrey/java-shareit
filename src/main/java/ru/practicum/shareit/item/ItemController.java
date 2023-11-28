@@ -11,14 +11,17 @@ import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.List;
 
-import static ru.practicum.shareit.headers.HeadersConstants.USER_ID;
+import static ru.practicum.shareit.constants.headers.HeadersConstants.USER_ID;
 
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class ItemController {
 
     private final ItemService itemService;
@@ -39,15 +42,19 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItem(@RequestHeader(USER_ID) long userId, @PathVariable long itemId) {
+    public ItemResponseDto getItem(@RequestHeader(USER_ID) long userId, @PathVariable long itemId) {
         log.debug("Получен запрос GET /items/{itemId}");
         return itemService.getItemDto(userId, itemId);
     }
 
     @GetMapping
-    public List<ItemResponseDto> getAllOwnersItem(@RequestHeader(USER_ID) long userId) {
+    public List<ItemResponseDto> getAllOwnersItem(@RequestHeader(USER_ID) long userId,
+                                                  @Valid @RequestParam(defaultValue = "0") @Min(0) @Max(50)
+                                                  int from,
+                                                  @Valid @RequestParam(defaultValue = "20") @Min(1) @Max(50)
+                                                  int size) {
         log.debug("Получен запрос GET /items");
-        return itemService.getAllOwnersItems(userId);
+        return itemService.getAllOwnersItems(userId, from, size);
     }
 
     @DeleteMapping("/{itemId}")
@@ -57,9 +64,11 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItems(@RequestParam String text) {
+    public List<ItemDto> searchItems(@RequestParam String text,
+                                     @Valid @RequestParam(defaultValue = "0") @Min(0) @Max(50) int from,
+                                     @Valid @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size) {
         log.debug("Получен запрос GET /items/search");
-        return itemService.searchItems(text);
+        return itemService.searchItems(text, from, size);
     }
 
     @PostMapping("/{itemId}/comment")
