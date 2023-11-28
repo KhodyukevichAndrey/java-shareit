@@ -32,7 +32,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class RequestServiceTest {
+class RequestServiceTest {
 
     @Mock
     private ItemStorage itemStorage;

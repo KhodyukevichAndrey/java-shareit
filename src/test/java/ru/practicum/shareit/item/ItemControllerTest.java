@@ -108,7 +108,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void getItemAndThenStatusIsOk() throws Exception{
+    void getItemAndThenStatusIsOk() throws Exception {
         when(service.getItemDto(anyLong(), anyLong())).thenReturn(itemResponseDto);
 
         mvc.perform(get("/items/{itemId}", 1L)
