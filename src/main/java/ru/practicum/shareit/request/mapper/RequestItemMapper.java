@@ -1,6 +1,6 @@
 package ru.practicum.shareit.request.mapper;
 
-import org.springframework.stereotype.Component;
+import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.item.dto.ItemForRequestDto;
 import ru.practicum.shareit.request.dto.RequestItemRequestDto;
 import ru.practicum.shareit.request.dto.RequestItemResponseDto;
@@ -12,10 +12,10 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
-@Component
+@UtilityClass
 public class RequestItemMapper {
 
-    public static RequestItem makeRequestItem(RequestItemRequestDto requestDto, User user) {
+    public RequestItem makeRequestItem(RequestItemRequestDto requestDto, User user) {
         return new RequestItem(
                 0,
                 requestDto.getDescription(),
@@ -23,7 +23,7 @@ public class RequestItemMapper {
                 LocalDateTime.now());
     }
 
-    public static RequestItemResponseDto makeMyResponseDto(RequestItem requestItem, List<ItemForRequestDto> items) {
+    public RequestItemResponseDto makeMyResponseDto(RequestItem requestItem, List<ItemForRequestDto> items) {
         return new RequestItemResponseDto(
                 requestItem.getId(),
                 requestItem.getDescription(),
@@ -32,7 +32,7 @@ public class RequestItemMapper {
         );
     }
 
-    public static RequestItemResponseDto makeResponseWithoutAnswer(RequestItem requestItem) {
+    public RequestItemResponseDto makeResponseWithoutAnswer(RequestItem requestItem) {
         return new RequestItemResponseDto(
                 requestItem.getId(),
                 requestItem.getDescription(),
@@ -41,7 +41,7 @@ public class RequestItemMapper {
         );
     }
 
-    public static RequestItemShortResponseDto makeShortResponse(RequestItem requestItem) {
+    public RequestItemShortResponseDto makeShortResponse(RequestItem requestItem) {
         return new RequestItemShortResponseDto(
                 requestItem.getId(),
                 requestItem.getDescription(),

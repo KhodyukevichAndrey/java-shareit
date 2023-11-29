@@ -1,6 +1,6 @@
 package ru.practicum.shareit.item.mapper;
 
-import org.springframework.stereotype.Component;
+import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Item;
@@ -9,10 +9,10 @@ import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
 
-@Component
+@UtilityClass
 public class ItemMapper {
 
-    public static ItemDto makeItemDto(Item item) {
+    public ItemDto makeItemDto(Item item) {
         RequestItem requestItem = item.getRequestItem();
         Long requestId = null;
         if (requestItem != null) {
@@ -27,7 +27,7 @@ public class ItemMapper {
         );
     }
 
-    public static Item makeItem(ItemDto itemDto, User user, RequestItem requestItem) {
+    public Item makeItem(ItemDto itemDto, User user, RequestItem requestItem) {
         return new Item(
                 itemDto.getId(),
                 itemDto.getName(),
@@ -38,14 +38,14 @@ public class ItemMapper {
         );
     }
 
-    public static ItemShortDto makeItemShortDto(Item item) {
+    public ItemShortDto makeItemShortDto(Item item) {
         return new ItemShortDto(
                 item.getId(),
                 item.getName()
         );
     }
 
-    public static ItemResponseDto makeItemForOwnerDto(ItemDto itemDto, BookingShortDto lastBooking, BookingShortDto nextBooking, List<CommentResponseDto> comments) {
+    public ItemResponseDto makeItemForOwnerDto(ItemDto itemDto, BookingShortDto lastBooking, BookingShortDto nextBooking, List<CommentResponseDto> comments) {
         return new ItemResponseDto(
                 itemDto,
                 lastBooking,
@@ -54,7 +54,7 @@ public class ItemMapper {
         );
     }
 
-    public static ItemForRequestDto makeItemForRequestDto(Item item) {
+    public ItemForRequestDto makeItemForRequestDto(Item item) {
         return new ItemForRequestDto(
                 item.getId(),
                 item.getName(),

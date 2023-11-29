@@ -50,10 +50,10 @@ public class BookingController {
     public List<BookingResponseDto> getAllUserBookings(@RequestHeader(USER_ID) long userId,
                                                        @RequestParam(defaultValue = "ALL")
                                                        String state,
-                                                       @Valid @RequestParam(defaultValue = "0") @Min(0) @Max(50)
-                                                           int from,
-                                                       @Valid @RequestParam(defaultValue = "20") @Min(1) @Max(50)
-                                                           int size) {
+                                                       @RequestParam(defaultValue = "0") @Min(0) @Max(50)
+                                                       int from,
+                                                       @RequestParam(defaultValue = "20") @Min(1) @Max(50)
+                                                       int size) {
         log.debug("Получен запрос GET /bookings?state={state}");
         return bookingService.getAllUserBooking(userId, state, from, size);
     }
@@ -62,10 +62,10 @@ public class BookingController {
     public List<BookingResponseDto> getAllOwnerBookings(@RequestHeader(USER_ID) long userId,
                                                         @RequestParam(defaultValue = "ALL")
                                                         String state,
-                                                        @Valid @RequestParam(defaultValue = "0") @Min(0) @Max(50)
-                                                            int from,
-                                                        @Valid @RequestParam(defaultValue = "20") @Min(1) @Max(50)
-                                                            int size) {
+                                                        @RequestParam(defaultValue = "0") @Min(0) @Max(50)
+                                                        int from,
+                                                        @RequestParam(defaultValue = "20") @Min(1) @Max(50)
+                                                        int size) {
         log.debug("Получен запрос GET /bookings/owner?state={state}");
         return bookingService.getAllOwnerBooking(userId, state, from, size);
     }
