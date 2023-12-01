@@ -12,21 +12,20 @@ import ru.practicum.shareit.user.storage.UserStorage;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static ru.practicum.shareit.constants.error.ErrorConstants.WRONG_USER_ID;
+
 @RequiredArgsConstructor
 @Service
 @Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
-    private final UserMapper userMapper;
-    private static final String WRONG_USER_ID = "Пользователь с указанным ID не найден";
-    private static final String EMAIL_DUPLICATE_ERROR = "Указанный формат почты не поддерживается";
 
     @Override
     @Transactional
     public UserDto addUser(UserDto userDto) {
-        User user = userStorage.save(userMapper.makeUser(userDto));
-        return userMapper.makeUserDto(user);
+        User user = userStorage.save(UserMapper.makeUser(userDto));
+        return UserMapper.makeUserDto(user);
     }
 
     @Override
@@ -35,19 +34,19 @@ public class UserServiceImpl implements UserService {
         User oldUser = getUser(userId);
         userDto.setId(userId);
 
-        return userMapper.makeUserDto(userStorage.save(updateUserFields(userDto, oldUser)));
+        return UserMapper.makeUserDto(userStorage.save(updateUserFields(userDto, oldUser)));
     }
 
     @Override
     public UserDto getUserDto(long id) {
-        return userMapper.makeUserDto(getUser(id));
+        return UserMapper.makeUserDto(getUser(id));
     }
 
     @Override
     public List<UserDto> getAllUsers() {
         List<User> users = userStorage.findAll();
         return users.stream()
-                .map(userMapper::makeUserDto)
+                .map(UserMapper::makeUserDto)
                 .collect(Collectors.toList());
     }
 
