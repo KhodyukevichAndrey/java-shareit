@@ -59,6 +59,7 @@ class ItemControllerTest {
         mvc.perform(post("/items")
                         .content(objectMapper.writeValueAsString(itemDto))
                         .characterEncoding(StandardCharsets.UTF_8)
+                        .header(USER_ID, 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());

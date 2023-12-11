@@ -16,7 +16,4 @@ public class BookingRequestDto {
     @FutureOrPresent
     private LocalDateTime start;
     private LocalDateTime end;
-
-    public interface RentDateValidation {
-    }
 }

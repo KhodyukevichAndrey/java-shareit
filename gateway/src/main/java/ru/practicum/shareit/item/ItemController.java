@@ -2,7 +2,9 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentRequestDto;
@@ -12,9 +14,11 @@ import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
+import java.util.Collections;
+
 import static ru.practicum.shareit.constants.headers.Headers.USER_ID;
 
-@RestController
+@Controller
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
@@ -65,6 +69,9 @@ public class ItemController {
                                               @RequestParam(defaultValue = "0") @Min(0) @Max(50) int from,
                                               @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size) {
         log.debug("Получен запрос GET /items/search");
+        if (text.isBlank()) {
+            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK);
+        }
         return itemClient.searchItems(text, from, size);
     }
 
